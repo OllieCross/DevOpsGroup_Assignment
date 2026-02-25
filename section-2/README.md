@@ -40,17 +40,31 @@ CMD ["node", "index.js"]
 ```
 
 - Predpokladame, že zdrojový adresár obsahuje aj `package.json` pre úspešne spustenie `npm install`.
-- Zmenšenie veľkosti: Prechodom z Ubuntu na `node:slim` sa veľkosť image výrazne zníži.
+- Zmenšenie veľkosti: Prechodom z Ubuntu na `node:slim` sa veľkosť imageu výrazne zníži.
 - Efektívna cache: Tým, že `COPY package*.json` je pred `COPY . .`, Docker nemusí znova inštalovať moduly pri každej zmene v zdrojovom kóde (pokým sa nezmenia závislosti).
 - Čistenie disku: Multi-stage build automaticky zahodí všetky dočasné súbory z prvej fázy, čím predchádza chybe "no space left on device".
 - Bezpečnosť: Finálny image neobsahuje nástroje ako `apt`, `curl` alebo `gcc`, čo zmenšuje možnosti pre potenciálny útok a zvyšuje tak bezpečnosť.
 
 #### Veľkosť pôvodného imageu
+
 661MB, 1m 45s deploy time
 ![screenshot1](./imgs/screenshot1.png)
 
 #### Veľkosť optimalizovaného imageu
+
 229MB, 43s deploy time
 ![screenshot2](./imgs/screenshot2.png)
 
 #### Monitoring
+
+Aby sme predišli opakovaniu problému "No space left", navrhujem nasledovné kroky:
+
+Prevencia (CI/CD Pipeline)
+
+- Docker Linting (Hadolint): Automatická kontrola Dockerfile v pipeline, ktorá upozorní na chýbajúce čistenie cache alebo nevhodné základné obrazy.
+- Limitácia veľkosti obrazu: Skript v CI, ktorý naschval zlyhá, ak image počas buildu prekročí stanovenú hranicu MB.
+
+Detekcia a údržba (Infraštruktúra)
+
+- Monitorovanie disku (Prometheus + Grafana): Nastavenie Alertmanager pravidiel pre varovanie pri zaplnení disku servera nad určité percento.
+- Automatické čistenie (Garbage Collection): Pravidelné spúšťanie príkazu `docker system prune -f` prostredníctvom CronJobu na čistenie nepoužívaných layerov a imageov.
