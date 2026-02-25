@@ -1,16 +1,16 @@
 #1. stage
 FROM python:3.12-slim AS builder
-#minimálny obraz python 3.12, referencia builder, ktorý sa použije v druhej fáze
+#minimálny image pythonu 3.12, referencia builderu, ktorý sa použije v 2. stagei
 WORKDIR /app
-# nastavenie pracovného adresára v rámci kontejneru
+# nastavenie pracovného adresára v rámci kontajneru
 RUN python -m venv /opt/venv
 # vytvorenie virtuálneho prostredia pre python
 ENV PATH="/opt/venv/bin:$PATH"
-# pridanie virtuálneho prostredia do PATH, aby bylo možné používat nainštalované balíčky
+# pridanie virtuálneho prostredia do PATH, aby bylo možné používat nainštalované balíky
 COPY requirements.txt .
 # skopirovanie zoznamu požiadaviek do pracovného adresára
 RUN pip install --no-cache-dir -r requirements.txt
-# nainštalovanie požiadaviek z requirements.txt bez ukladania cache
+# nainštalovanie požiadaviek z requirements.txt
 
 #2. stage
 FROM python:3.12-slim
@@ -28,4 +28,4 @@ ENV FLASK_APP=app.py
 EXPOSE 5000
 # otvorenie portu 5000 pre prístup k webu
 CMD ["flask", "run", "--host=0.0.0.0"]
-# spustenie severu na všetkých rozhraniach
+# spustenie severu a umožnenie prístupu mimo kontaineru
